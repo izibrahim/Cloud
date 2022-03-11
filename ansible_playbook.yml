@@ -1,0 +1,4 @@
+- hosts: all
+  tasks:
+      - name: execute command
+        command: mkdir multicmd

@@ -1,0 +1,53 @@
+provider "aws" {
+  region = "us-east-2"
+  access_key = "Your access key"
+  secret_key = "Your Sec key"
+}
+
+
+resource "aws_security_group" "allow_ssh" {
+  name        = "allow_ssh"
+  description = "Allow SSH inbound traffic"
+
+  ingress {
+    description = "SSH into VPC"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    description = "Outbound Allowed"
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+resource "aws_instance" "myec2" {
+   ami = "ami-00dfe2c7ce89a450b"
+   instance_type = "t2.micro"
+   key_name = "MyPAIR"
+   associate_public_ip_address = true
+   vpc_security_group_ids  = [aws_security_group.allow_ssh.id]
+
+   provisioner "remote-exec" {
+             inline = ["echo 'hello world'" ]
+   connection {
+             type = "ssh"
+             user = "ec2-user"
+             private_key = file("./MyPAIR.pem")
+             host = self.public_ip
+              }
+           }
+
+
+   provisioner "local-exec" {
+     command = "ansible-playbook -i ${aws_instance.myec2.public_ip}, --private-key ./MyPAIR.pem play.yml"
+
+   }
+}
+
+

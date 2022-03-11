@@ -1,3 +1,4 @@
+# GCP vm machine
 provider "google" {
   credentials = file("gcpuser.json")
   project     = "my-project-7214-246815"
